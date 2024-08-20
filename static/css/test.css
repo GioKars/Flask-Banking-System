@@ -1,0 +1,30 @@
+/* Hide all forms by default */
+.forms form {
+    display: none;
+}
+
+/* Show the form when the corresponding checkbox is checked */
+#deposit-checkbox:checked ~ .forms #deposit-form,
+#withdraw-checkbox:checked ~ .forms #withdraw-form {
+    display: block;
+}
+
+/* Style for the toggle labels */
+.toggle-label {
+    color: #fff;
+    font-size: 2.3em;
+    display: block;
+    margin: 20px 0;
+    cursor: pointer;
+}
+
+/* Styling for the buttons */
+.buttons {
+    display: flex;
+    justify-content: space-around;
+}
+
+/* Styling for the forms */
+.forms {
+    position: relative;
+}

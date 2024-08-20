@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transaction History</title>
+    <link rel="shortcut icon" href="{{ url_for('static', filename='icons/logo.png') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/transaction_history.css') }}">
+</head>
+<body>
+    {% if session.get('user_type') != 'admin' %}
+        {% extends "navbar.html" %}
+    {% endif %}
+    
+    {% block content %}
+    <div class="container">
+        <h1>Transaction History</h1>
+
+        <div class="user-info">
+            <div class="user">User: {{ user_initials }}</div>
+            <div class="user-balance">Balance: {{ user_balance }}$</div>
+        </div>
+
+        <div class="transaction-history-container">
+            <div class="transaction-history">
+                <h3>Deposit</h3>
+                <div class="deposit-history">
+                    {% if deposit_history %}
+                        {% for deposit in deposit_history %}
+                            <p>{{ deposit[1] }} - Amount: ${{ deposit[0] }}</p>
+                        {% endfor %}
+                    {% else %}
+                        <p>No deposit history available.</p>
+                    {% endif %}
+                </div>
+                <h3>Withdrawal</h3>
+                <div class="withdrawal-history">
+                    {% if withdraw_history %}
+                        {% for withdrawal in withdraw_history %}
+                            <p>{{ withdrawal[1] }} - Amount: ${{ withdrawal[0] }}</p>
+                        {% endfor %}
+                    {% else %}
+                        <p>No withdraw history available.</p>
+                    {% endif %}
+                </div>
+                <h3>Transfers</h3>
+                <div class="transfer-history">
+                    {% if transfer_history %}
+                        {% for transfer in transfer_history %}
+                            <p>From: {{ transfer[2] }} - To: {{ transfer[3] }} - Amount: ${{ transfer[0] }} - Datetime: {{ transfer[1] }}</p>
+                        {% endfor %}
+                    {% else %}
+                        <p>No transfer history available.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="export-csv">
+            {% if session.get('user_type') == 'admin' %}
+                <a href="{{ url_for('admin.export_csv', account_id=account_id) }}" class="button">Export as CSV</a>
+            {% else %}
+                <a href="{{ url_for('user.export_csv_user') }}" class="button">Export as CSV</a>
+            {% endif %}
+        </div>
+    </div>
+    {% endblock %}
+</body>
+</html>

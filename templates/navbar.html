@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}My Flask Site{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/navbar.css') }}">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+</head>
+<body>
+    <header>
+        <nav class="navbar">
+            <ul>
+                <li><a href="/user_dashboard">My Bank</a></li>
+                <li class="user-initials">Hello, {{ user_initials }}</li>
+                <li class="dropdown">
+                    <a href="#" class="dropbtn">Account</a>
+                    <div class="dropdown-content">
+                        <a href="{{ url_for('user.settings') }}">⚙️Settings</a>
+                        <a id="logout-btn" onclick="logout()">🚪 Logout</a>
+                    </div>
+                </li>
+                <li class="notifications">
+                    <div id="notification-icon">
+                        <img id="notification-image" src="/static/icons/icons8-letter-50.png" alt="Notification Icon" data-toggle="modal" data-target="#messages-modal">
+                    </div>
+                    <div class="modal fade" id="messages-modal" tabindex="-1" aria-labelledby="messages-modal-label" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered modal-lg">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="messages-modal-label">Notifications</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">X</button>
+                                </div>
+                                <div class="modal-body">
+                                    <div id="messages-container">
+                                        {% if messages %}
+                                            {% for message in messages %}
+                                                <div class="message">
+                                                    <strong>{{ message.sender }}:</strong> {{ message.content }} <br>
+                                                    <small>{{ message.timestamp }}</small>
+                                                </div>
+                                                <hr>
+                                            {% endfor %}
+                                        {% else %}
+                                            <p>You don't have any messages.</p>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        {% block content %}
+        {% endblock %}
+        <div class="container">
+            <input type="checkbox" id="themeToggle" class="switch">
+            <label for="themeToggle" class="slider round"></label>
+        </div>
+    </main>
+    <footer>
+        <p>&copy; 2024 My Flask Site (Gio Kars)</p>
+    </footer>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        var logoutUrl = "{{ url_for('user.user_logout') }}";
+    </script>
+    <script src="{{ url_for('static', filename='js/navbar.js') }}"></script>
+</body>
+</html>

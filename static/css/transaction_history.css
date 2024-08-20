@@ -1,0 +1,145 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    color: #333;
+    margin: 0;
+    padding: 20px;
+}
+
+.container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    max-width: 800px;
+    background-color: #fff;
+    padding: 20px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    margin: 0 auto;
+}
+
+h1 {
+    color: #4CAF50;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.user-info {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    width: 100%;
+}
+
+.user, .user-balance {
+    font-size: 18px;
+    font-weight: bold;
+    color: #333;
+}
+
+.transaction-history-container {
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    max-height: 400px; /* Adjust the maximum height as needed */
+    overflow-y: auto; /* Enable vertical scrolling */
+    padding: 10px;
+    width: 100%;
+}
+
+.transaction-history h3 {
+    color: #4CAF50;
+    border-bottom: 1px solid #ccc;
+    padding-bottom: 5px;
+    margin-bottom: 10px;
+}
+
+.transaction-history p {
+    margin: 5px 0;
+    padding: 5px;
+    background-color: #f9f9f9;
+    border-radius: 4px;
+}
+
+.transaction-history p:nth-child(even) {
+    background-color: #f1f1f1;
+}
+
+
+.export-csv {
+    text-align: center;
+    margin-top: 20px;
+}
+
+.button {
+    background-color: #4CAF50;
+    color: white;
+    padding: 10px 20px;
+    text-decoration: none;
+    border-radius: 4px;
+}
+
+.button:hover {
+    background-color: #45a049;
+}
+
+:root {
+    --background-color-light: #f4f4f4;
+    --background-color-dark: #333;
+    --text-color-light: #333;
+    --text-color-dark: #f4f4f4;
+    --border-color: #ccc;
+    --button-bg-light: #4CAF50;
+    --button-bg-dark: #45a049;
+    --button-color: white;
+    --button-hover-bg-light: #45a049;
+    --button-hover-bg-dark: #4CAF50;
+    --content-bg-light: #fff;
+    --content-bg-dark: #333;
+    --transaction-history: #3f3f3f;
+    --content-color-light: #333;
+    --content-color-dark: #f4f4f4;
+    --user-initials-color-dark: #fff; /* Color for user initials in dark theme */
+    --history-data-color-dark: #fff; /* Color for history data in dark theme */
+}
+
+body.light-theme {
+    background-color: var(--background-color-light);
+    color: var(--text-color-light);
+}
+
+body.dark-theme {
+    background-color: var(--background-color-dark);
+    color: var(--text-color-dark);
+}
+
+.container {
+    background-color: var(--content-bg);
+    color: var(--content-color);
+}
+
+body.dark-theme .container {
+    background-color: var(--content-bg-dark);
+    color: var(--content-color-dark);
+}
+
+.user-balance {
+    color: var(--text-color); /* Default color for user initials */
+}
+
+body.dark-theme .user {
+    color: var(--user-initials-color-dark); /* Color for user initials in dark theme */
+}
+
+.transaction-history p {
+    color: var(--text-color); /* Default color for history data */
+}
+
+body.dark-theme .transaction-history p:nth-child(even) {
+    color: var(--history-data-color-dark); /* Color for history data in dark theme */
+    background-color: var(--content-bg-dark);
+}
+body.dark-theme .transaction-history p {
+    color: var(--text-color); /* Default color for history data */
+    background-color: var(--transaction-history);
+}

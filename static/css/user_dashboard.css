@@ -1,0 +1,215 @@
+.account-closed-message {
+    background-color: #f8d7da; /* Red background color */
+    color: #721c24; /* Dark red text color */
+    padding: 10px;
+    margin: 40px;
+    text-align: center;
+    font-weight: bold;
+}
+
+/* Define your styles for the user initials display */
+.user-initials {
+    font-size: 24px;
+    font-weight: bold;
+    color: #ffffff;
+    position: absolute;
+    top: 10px;
+    right: 10px;
+}
+.total{
+    font-size: 25px;
+    font-weight: bold;
+}
+.grid-container{
+    grid-auto-flow: column;
+}
+.transaction-txt{
+    font-size: 20px;
+}
+.grid-item1,.grid-item2,.grid-item3 {
+    border: 1px solid rgba(0, 0, 0, 0.8);
+    width: 250px;
+    height: 170px;
+    padding: 20px;
+    display: inline-block;
+    vertical-align: middle;
+    /* float: left; */
+    /* font-size: 30px; */
+    text-align: center;
+  }
+.grid-item1,.grid-item2,.grid-item3{
+    /* background-color: #00A4BD; */
+    border: 2px solid #00A4BD;
+    padding: 10px;
+    border-radius: 1rem;  
+}
+.transaction-history-container {
+    max-width: 320px;
+    max-height: 300px; /* Adjust the maximum height as needed */
+    overflow-y: auto; /* Enable vertical scrolling */
+    border: 1px solid #ccc; /* Optional: add border for visual separation */
+}   
+
+.deposit-history {
+    padding: 10px;
+}
+
+a:link { 
+    text-decoration: none;
+    color: white;
+} 
+a:visited { 
+    text-decoration: none; 
+} 
+
+input {
+    font-size: 16px; /* Adjust the font size */
+    height: 10px; /* Adjust the height */
+    border: none;
+    outline: none;
+    border-radius: 15px;
+    padding: 1em;
+    background-color: #ccc;
+    box-shadow: inset 2px 5px 10px rgba(0,0,0,0.3);
+    transition: 300ms ease-in-out;
+}
+
+input:focus {
+    background-color: white;
+    transform: scale(1.05);
+    /* box-shadow: 13px 13px 100px #969696,
+               -13px -13px 100px #ffffff; */
+}
+
+
+button{
+    border: 0;
+    border-radius: 12px;
+    color: #FFFFFF;
+    cursor: pointer;
+    display: inline-block;
+    font-family: -apple-system,system-ui,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    font-size: 16px;
+    font-weight: 500;
+    line-height: 2.5;
+    outline: transparent;
+    padding: 0 1rem;
+    text-align: center;
+    text-decoration: none;
+    transition: box-shadow .2s ease-in-out;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: manipulation;
+    white-space: nowrap;
+}
+
+#btn-deposit{
+    background: linear-gradient(to bottom right, #15813f, #5aff5a);
+    margin: 2px;
+    border-radius: 20px;
+}
+
+#btn-deposit:is(:not([disabled]):hover,:focus) {
+    box-shadow: 0 0 .25rem rgba(0, 0, 0, 0.5), -.125rem -.125rem 1rem rgba(152, 239, 71, 0.5), .125rem .125rem 1rem rgba(170, 255, 90, 0.5);
+}
+
+#btn-withdraw{
+    background: linear-gradient(to bottom right, #ef4747, #f51515);
+    margin: 2px;
+    border-radius: 20px;
+}
+  
+#btn-withdraw:is(:not([disabled]):hover,:focus) {
+    box-shadow: 0 0 .25rem rgba(0, 0, 0, 0.5), -.125rem -.125rem 1rem rgba(239, 71, 71, 0.5), .125rem .125rem 1rem rgba(255, 96, 90, 0.5);
+}
+
+#btn-transfer{
+    background: linear-gradient(to bottom right, #EF4765, #FF9A5A);
+    margin: 2px;
+    border-radius: 20px;
+}
+
+  
+#btn-transfer:is(:not([disabled]):hover,:focus) {
+    box-shadow: 0 0 .25rem rgba(0, 0, 0, 0.5), -.125rem -.125rem 1rem rgba(239, 71, 101, 0.5), .125rem .125rem 1rem rgba(255, 154, 90, 0.5);
+}
+
+#btn-transactions{
+    background: linear-gradient(to bottom right, #ef478d, #d015f5);
+    margin: 2px;
+    border-radius: 20px;
+}
+  
+#btn-transactions:is(:not([disabled]):hover,:focus) {
+    box-shadow: 0 0 .25rem rgba(0, 0, 0, 0.5), -.125rem -.125rem 1rem rgba(239, 71, 189, 0.5), .125rem .125rem 1rem rgba(255, 90, 255, 0.5);
+}
+
+
+#barChart {
+    max-width: 600px; /* Adjust height as needed */
+    max-height: 400px;
+}
+
+
+/* LIGHT-DARK MODE  */
+body.light-theme {
+    font-family: Arial, sans-serif;
+    background-color: #F5F5F5; /* Light theme background color */
+    color: #333; /* Light theme text color */
+}
+
+body.dark-theme {
+    font-family: Arial, sans-serif;
+    background-color: #333; /* Dark theme background color */
+    color: #f0f0f0; /* Dark theme text color */
+}
+
+/* Switch styling */
+.switch {
+    display: none;
+}
+
+.switch + .slider {
+    position: relative;
+    cursor: pointer;
+    display: inline-block;
+    width: 60px;
+    height: 34px;
+    background-color: #697976;
+    border-radius: 34px;
+    transition: background-color 0.4s;
+    position: absolute;
+    top: 60px;
+    right: 10px;
+}
+
+.switch + .slider:before {
+    position: absolute;
+    height: 26px;
+    width: 26px;
+    left: 4px;
+    bottom: 4px;
+    /* background-color: white; */
+    border-radius: 50%;
+    transition: transform 0.4s;
+}
+.slider::before{
+    content: "☀️";
+    font-size: 26px; /* Increase font size */
+    line-height: 26px; /* Ensure vertical alignment */
+    left: 7px;
+    transform: translateX(-5px);
+}
+.switch:checked + .slider {
+    background-color: #2196F3;
+}
+
+.switch:checked + .slider:before {
+    transform: translateX(23px);
+    content: "🌑";
+}
+
+.switch-chart-btn{
+    color: #2196F3;
+    background-color: rgb(0, 248, 207);
+}

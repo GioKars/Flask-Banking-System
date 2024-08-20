@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-control" content="no-cache">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin_panel.css') }}">
+    <title>Admin Panel</title>
+</head>
+<body>
+    <div class="navbar">
+        <h1>Admin Panel</h1>
+        <a href="{{ url_for('admin.admin_logout') }}" class="logout">Logout</a>
+    </div>
+    {% if accounts %}
+    <table border="1">
+        <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Surname</th>
+            <th>Email</th>
+            <th>Phone</th>
+            <th>Password</th>
+            <th>Sex</th>
+            <th>Balance</th>
+            <th>Approved</th>
+            <th>Action</th>
+            <th>Freeze/Unfreeze</th>
+        </tr>
+        {% for account in accounts %}
+        <tr>
+            <td>{{ account[0] }}</td>
+            <td>{{ account[1] }}</td>
+            <td>{{ account[2] }}</td>
+            <td>{{ account[3] }}</td>
+            <td>{{ account[4] }}</td>
+            <td>{{ account[5] }}</td>
+            <td>{{ account[6] }}</td>
+            <td>{{ account[7] }}</td>
+            <td>{{ "Yes" if account[8] else "No" }}</td>
+            <td>
+                {% if not account[8] %}
+                    <a href="{{ url_for('admin.approve', account_id=account[0]) }}">Approve</a>
+                {% else %}
+                    <a href="#" disabled>Approve</a>
+                {% endif %}
+            </td>
+            <td>
+                {% if not account[9] %}
+                    <a href="{{ url_for('admin.toggle_freeze', account_id=account[0], action='freeze') }}">Freeze</a>
+                {% else %}
+                    <a href="{{ url_for('admin.toggle_freeze', account_id=account[0], action='unfreeze') }}">Unfreeze</a>
+                {% endif %}
+            </td>
+            <td>
+                <form action="{{ url_for('admin.view_transactions', account_id=account[0]) }}" method="post">
+                    <button type="submit">View Transactions</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% else %}
+    <p>No users found</p>
+    {% endif %}
+</body>
+</html>

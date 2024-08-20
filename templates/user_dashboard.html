@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta http-equiv="Cache-control" content="no-cache">
+
+    <link rel="shortcut icon" href="{{ url_for('static', filename='icons/logo.png') }}">
+    <link rel="stylesheet" href= "{{ url_for('static',filename='css/user_dashboard.css') }}" id="theme">
+    <title>User Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+</head>
+<body class="light-theme">
+    {% extends "navbar.html" %}
+    {% block content %}
+    {% if account_frozen %}
+        <div class="account-closed-message">Your account has been closed. Please contact support for more information.</div>
+    {% else %}
+        {% if account_not_approved %}
+        <div class="account-not-approved-message">Your account is not approved yet. Please wait for approval.</div>
+        <h3>Welcome back</h3>
+        <div class="user-initials">{{ user_initials }}</div>
+        <div class="container">
+            <div class="user-balance">Your Balance:<br> {{ user_balance }}$</div>
+        {% else %}
+            <!-- Display user dashboard content (balance, transaction history, etc.) -->
+            <h2>Welcome back</h2>
+            <!-- <div class="user-initials">Hello, {{ user_initials }}.</div> -->
+            
+            <div class="grid-item1">
+                <div class="user-balance">Your Balance<br> <div class="total">${{ user_balance }}</div></div>
+                <!-- Deposit and Withdraw form -->
+                <form action="{{ url_for('user.deposit') }}" method="post">
+                    <input type="number" id="amount" name="amount" min="10" max="100000" placeholder="$" required><br>
+                    <button type="submit" id="btn-deposit" {% if account_approved %}disabled{% endif %}>Deposit</button>
+                    <button type="submit" id="btn-withdraw" formaction="{{ url_for('user.withdraw') }}" id="withdraw-btn" {% if account_approved %}disabled{% endif %}>Withdraw</button><br>
+                </form>
+            </div>
+
+            <div class="grid-item2">
+                <!-- Transfer form -->
+                <form action="{{ url_for('user.transfer') }}" method="post">
+                    <label for="recipient_phone">Recipient's Phone Number:</label>
+                    <input type="text" id="recipient_phone" name="recipient_phone" maxlength="10" placeholder="xxxxxxxxxx" required><br>
+                    <label for="transfer_amount">Transfer Amount:</label>
+                    <input type="number" id="transfer_amount" name="transfer_amount" min="1" placeholder="$" required><br>
+                    <button type="submit" id="btn-transfer">Transfer</button>
+                </form>
+            </div>
+            
+            <div class="grid-item3">
+                <!-- Transaction history -->
+                <b class="transaction-txt">Recent Transaction</b>
+                <div class="transaction-history-container">
+                    <div class="transaction-history" id="lastTransaction" style="display: block;">
+                        {% if last_transaction %}
+                            {% if last_transaction[0] == 'Deposit' %}
+                                <!-- <h3>Deposit</h3> -->
+                                <div class="deposit-history">
+                                    <p><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus" viewBox="0 0 16 16">
+                                        <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"/>
+                                    </svg> {{ last_transaction[1]}}$ <br>
+                                            Date: {{ last_transaction[2].split(' ')[0] }}
+                                    </p>
+                                </div>
+                            {% elif last_transaction[0] == 'Withdrawal' %}
+                                <!-- <h3>Withdrawal</h3> -->
+                                <div class="withdrawal-history">
+                                    <p>
+                                        <!-- <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-dash" viewBox="0 0 16 16">
+                                        <path d="M4 8a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7A.5.5 0 0 1 4 8"/>
+                                    </svg>  -->
+                                    {{ last_transaction[1] }}$ <br>
+                                            Date: {{ last_transaction[2].split(' ')[0] }}</p>
+                                </div>
+                            {% elif last_transaction[0] == 'Transfer' %}
+                                <!-- <h3>Transfer</h3> -->
+                                <div class="transfer-history">
+                                    {% if last_transaction[1] == user_info[0] %}
+                                        <p><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-left-right" viewBox="0 0 16 16">
+                                            <path fill-rule="evenodd" d="M1 11.5a.5.5 0 0 0 .5.5h11.793l-3.147 3.146a.5.5 0 0 0 .708.708l4-4a.5.5 0 0 0 0-.708l-4-4a.5.5 0 0 0-.708.708L13.293 11H1.5a.5.5 0 0 0-.5.5m14-7a.5.5 0 0 1-.5.5H2.707l3.147 3.146a.5.5 0 1 1-.708.708l-4-4a.5.5 0 0 1 0-.708l4-4a.5.5 0 1 1 .708.708L2.707 4H14.5a.5.5 0 0 1 .5.5"/>
+                                        </svg> {{ last_transaction[5] }}$<br>
+                                                To: {{ last_transaction[4] }}  </p>
+                                    <!-- - Datetime: {{ last_transaction[4] }} -->
+                                    {% elif last_transaction[3] == user_info[0] %}
+                                        <p><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-left-right" viewBox="0 0 16 16">
+                                            <path fill-rule="evenodd" d="M1 11.5a.5.5 0 0 0 .5.5h11.793l-3.147 3.146a.5.5 0 0 0 .708.708l4-4a.5.5 0 0 0 0-.708l-4-4a.5.5 0 0 0-.708.708L13.293 11H1.5a.5.5 0 0 0-.5.5m14-7a.5.5 0 0 1-.5.5H2.707l3.147 3.146a.5.5 0 1 1-.708.708l-4-4a.5.5 0 0 1 0-.708l4-4a.5.5 0 1 1 .708.708L2.707 4H14.5a.5.5 0 0 1 .5.5"/>
+                                        </svg> {{ last_transaction[5] }}$<br>
+                                                From: {{ last_transaction[2] }} <br> 
+                                                Date: {{ last_transaction[6] }}</p>
+                                    {% endif %}
+                                </div>
+                            {% endif %}
+                        {% else %}
+                            <p>No transaction history available.</p>
+                        {% endif %}
+                    </div>
+                </div>
+                <form action="{{ url_for('user.user_transactions') }}" method="post">
+                    <button id="btn-transactions" type="submit">Recent Transactions</button>
+                </form>
+            </div>
+            {% endif %}
+        </div>
+        <br>
+        <div class="switch-container">
+            <button id="modeSwitch" class="switch-chart-btn">Spending</button>
+        </div>
+        <canvas id="barChart" width="600" height="400"></canvas>
+        <br>
+        <script>
+            
+            // Parse chart data from Flask route
+            var chartData = JSON.parse('{{ chart_data | safe }}');
+            var modeSwitch = document.getElementById('modeSwitch');
+
+            // Get canvas element
+            var canvas = document.getElementById('barChart');
+            var ctx = canvas.getContext('2d');
+
+            // Create the bar chart
+            var myChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: chartData.date, // Use dates as labels
+                datasets: [{
+                    label: 'Spending',
+                    data: chartData.with_amounts,
+                    backgroundColor: 'rgba(255, 99, 132, 0.5)', // Bar color for spending
+                    borderColor: 'rgba(255, 99, 132, 1)', // Border color for spending
+                    hidden: false // Initially display spending data
+                }]
+            },
+            options: {
+            scales: {
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Date'
+                    }
+                },
+                y: {
+                    title: {
+                        display: true,
+                        text: 'Amount $'
+                    },
+                    ticks: {
+                        reverse: true, // Reverse the direction of the y-axis
+                        beginAtZero: false, // Start y-axis from a non-zero value
+                    }
+                }
+            },
+            plugins: {
+                tooltip: {
+                    mode: 'index',
+                    intersect: false
+                }
+            }
+        }
+            });
+
+            // Event listener for mode switch button
+            modeSwitch.addEventListener('click', function() {
+            var currentMode = modeSwitch.textContent.trim();
+            if (currentMode === 'Spending') {
+                // Show income data
+                myChart.data.datasets[0].label = 'Income';
+                myChart.data.datasets[0].data = chartData.dep_amounts ;
+                myChart.data.datasets[0].backgroundColor = 'rgba(54, 162, 235, 0.5)';
+                myChart.data.datasets[0].borderColor = 'rgba(54, 162, 235, 1)';
+                modeSwitch.textContent = 'Income';
+            } else {
+                // Show spending data
+                myChart.data.datasets[0].label = 'Spending';
+                myChart.data.datasets[0].data = chartData.with_amounts;
+                myChart.data.datasets[0].backgroundColor = 'rgba(255, 99, 132, 0.5)';
+                myChart.data.datasets[0].borderColor = 'rgba(255, 99, 132, 1)';
+                modeSwitch.textContent = 'Spending';
+            }
+            myChart.update(); // Update the chart
+            });
+
+        </script>
+        {% endif %}
+    {% endblock %}
+</body>
+</html>

@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta http-equiv="Cache-control" content="no-cache">
+
+    <link rel="shortcut icon" href="{{ url_for('static', filename='icons/logo.png') }}">
+    <link rel="stylesheet" href= "{{ url_for('static',filename='css/index.css') }}">
+    <title>My Bank</title>
+</head>
+<body>
+    <div class="main">
+        <input type="checkbox" id="chk" aria-hidden="true">
+
+        <div class="signup">
+            <form action="{{ url_for('user.register_user') }}" method="post">
+                <label for="chk" aria-hidden="true">Sign up</label>
+                <input type="text" id="name" name="name" placeholder="Name" required><br>
+                <input type="text" id="surname" name="surname" placeholder="Surname" required><br>
+                <input type="email" id="email" name="email" placeholder="Email" required><br>
+                <input type="phone" id="phone" name="phone" maxlength="10" placeholder="Phone" required><br>
+                <input type="password" id="password" name="password" minlength="8" placeholder="Password" required autocomplete="off"><br>
+                <select type="text" id="sex" name="sex" required>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                </select><br>
+                <input type="submit" value="Sign up">
+            </form>
+            <!-- already have account? <a href="{{ url_for('user.login_user') }}">Login</a> -->
+                <div class="errors">
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        <ul>
+                        {% for category, message in messages %}
+                            <li class="{{ category }}">{{ message }}</li>
+                        {% endfor %}
+                        </ul>
+                    {% endif %}
+                    {% endwith %}
+                </div>
+            </div>
+            <div class="login">
+                <form  method="post"> <!-- action="{{ url_for('user.login_user') }}" -->                  
+                    <label for="chk" aria-hidden="true">Login</label>
+                    <input type="email" id="login-email" name="email" placeholder="Email" required=""><br>
+                    <div class="password-container">
+                        <input type="password" id="login-password" name="password" placeholder="Password" required autocomplete="off">
+                        <!-- <input type="password" id="passwordField" placeholder="Password"> -->
+                        <span id="togglePassword" class="eye-icon">🙈</span>
+                    </div>
+
+                    <button onclick="login()">Login</button>
+                </form>
+            </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/index.js') }}"></script>
+</body>
+</html>
