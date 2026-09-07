@@ -12,7 +12,8 @@ load_dotenv()
 
 EMAIL = os.getenv('EMAIL_USER')
 PASSW = os.getenv('EMAIL_PASSWORD')
-
+HOST = os.getenv('SMTP_HOST')
+PORT = os.getenv('SMTP_PORT')
 
 def get_current_user_email():
     # Example implementation for session-based authentication
@@ -35,7 +36,7 @@ def store_otp(email, otp):
     cursor.execute('''CREATE TABLE IF NOT EXISTS otps (
                                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                                 email TEXT,
-                                otp INTEGER,
+                                otp TEXT,
                                 creation_time TEXT
                             );''')
     cursor.execute("INSERT INTO otps (email, otp, creation_time) VALUES (?, ?, ?)",
@@ -65,23 +66,20 @@ def delete_otp(email):
 
 
 def send_verification_email(email, verification_code, content):
-    s = smtplib.SMTP(host="smtp.office365.com", port=587)
-    s.starttls()
+    s = smtplib.SMTP_SSL(host=HOST, port=PORT)
     s.login(EMAIL, PASSW)
 
-    # Create the email message
     msg = EmailMessage()
     msg.set_content(f"OTP code: {verification_code}\n{content}")
 
     msg['Subject'] = 'OTP CODE'
-    msg['From'] = EMAIL
+    msg['From'] = EMAIL 
     msg['To'] = email
-    # msg.set_content('This is a test email sent using Elastic Email SMTP.')
 
-    # Send the email
     s.send_message(msg)
     s.quit()
     return "Sent email"
+
 
 
 def is_email_verified(email):
@@ -142,91 +140,6 @@ def is_otp_expired(creation_time_str):
     return datetime.now() > expiration_time
 
 
-''' PART FOR SEND FRIEND REQUESTS TO OTHER USERS '''
-
-
-def create_friend_table():
-    # Create friends table
-    conn_friends = sqlite3.connect('bank.db')
-    cursor_friends = conn_friends.cursor()
-    cursor_friends.execute(
-        '''CREATE TABLE IF NOT EXISTS friends (
-            id INTEGER PRIMARY KEY,
-            user_id INTEGER,
-            friend_id INTEGER,
-            status TEXT 
-        );''')
-
-    # Close the cursor and connection
-    cursor_friends.close()
-    conn_friends.close()
-
-
-def create_friend_request_table():
-    # Create friend_requests table
-    conn_requests = sqlite3.connect('bank.db')
-    cursor_requests = conn_requests.cursor()
-    cursor_requests.execute(
-        '''CREATE TABLE IF NOT EXISTS friend_requests (
-            id INTEGER PRIMARY KEY,
-            from_user_id INTEGER,
-            to_user_id INTEGER,
-            status TEXT -- 'pending', 'accepted', 'rejected'
-        );''')
-
-    # Close the cursor and connection
-    cursor_requests.close()
-    conn_requests.close()
-
-
-def get_friend_request(from_user_id, to_user_id):
-    conn = sqlite3.connect('bank.db')
-    cursor = conn.cursor()
-    cursor.execute(
-        "SELECT * FROM friend_requests WHERE from_user_id = ? AND to_user_id = ? AND status = 'pending'", (from_user_id, to_user_id))
-    request = cursor.fetchone()
-    conn.close()
-    return request
-
-
-def create_friend_request(from_user_id, to_user_id):
-    conn = sqlite3.connect('bank.db')
-    cursor = conn.cursor()
-    cursor.execute(
-        "INSERT INTO friend_requests (from_user_id, to_user_id, status) VALUES (?, ?, 'pending')", (from_user_id, to_user_id))
-    conn.commit()
-    conn.close()
-
-
-def get_friend_request_by_id(request_id):
-    conn = sqlite3.connect('bank.db')
-    cursor = conn.cursor()
-    cursor.execute("SELECT * FROM friend_requests WHERE id = ?", (request_id,))
-    request = cursor.fetchone()
-    conn.close()
-    return request
-
-
-def create_friend_relationship(user1_email, user2_email):
-    conn = sqlite3.connect('bank.db')
-    cursor = conn.cursor()
-
-    # Check if the friendship already exists
-    cursor.execute("SELECT * FROM friendships WHERE (user1_email = ? AND user2_email = ?) OR (user1_email = ? AND user2_email = ?)",
-                   (user1_email, user2_email, user2_email, user1_email))
-    existing_friendship = cursor.fetchone()
-
-    if existing_friendship:
-        return False  # Friendship already exists
-
-    # Insert friendship into the database
-    cursor.execute(
-        "INSERT INTO friendships (user1_email, user2_email) VALUES (?, ?)", (user1_email, user2_email))
-    conn.commit()
-    conn.close()
-    return True
-
-
 def messages_db():
     # Create messages table
     conn_messages = sqlite3.connect('bank.db')
@@ -270,13 +183,18 @@ def fetch_messages(recipient_email):
     cursor.close()
     conn.close()
 
-    for message in messages:
-        print("Sender:", message[0])
-        print("Content:", message[1])
-        timestamp = datetime.strptime(message[2], '%Y-%m-%d %H:%M:%S.%f')
-        # Format the timestamp without milliseconds
-        formatted_timestamp = timestamp.strftime('%Y-%m-%d %H:%M:%S')
-        print("Timestamp:", formatted_timestamp)
-        print("---")
+    formatted_messages=[]
 
-    return [{'sender': msg[0], 'content': msg[1], 'timestamp': formatted_timestamp} for msg in messages]
+    for sender, content, timestamp_str in messages:
+        timestamp = datetime.strptime(
+            timestamp_str,
+            "%Y-%m-%d %H:%M:%S.%f"
+        )
+
+        formatted_messages.append({
+            "sender": sender,
+            "content": content,
+            "timestamp": timestamp.strftime("%Y-%m-%d %H:%M:%S")
+        })
+
+    return formatted_messages

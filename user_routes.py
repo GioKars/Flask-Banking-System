@@ -17,7 +17,6 @@ def register_user():
         name = request.form['name']
         surname = request.form['surname']
         email = request.form['email']
-        print("Email from form data:", email)
         phone = request.form['phone']
         password = request.form['password']
         sex = request.form['sex']
@@ -67,7 +66,6 @@ def register_user():
 def verify_otp():
     if request.method == 'POST':
         email = session.get('email')
-        print(email)
         # entered_otp = request.form['otp']
         otp_values = request.form.getlist('otp[]')
         entered_otp = ''.join(otp_values)
@@ -79,19 +77,9 @@ def verify_otp():
             # Ensure that both OTPs are strings
             stored_otp = str(stored_otp)  # Convert stored OTP to string
             entered_otp = str(entered_otp)  # Ensure entered OTP is a string
-
-            print("stored otp: ", stored_otp)
-            print("entered otp: ", entered_otp)
         else:
             flash('No OTP found for the provided email.', 'error')
             return redirect(url_for('index'))
-
-        print("creation_time_str: ", creation_time_str)
-        print(type(creation_time_str))
-        print("stored otp: ", stored_otp)
-        print(type(stored_otp))
-        print("entered otp: ", entered_otp)
-        print(type(entered_otp))
 
         if str(stored_otp) == entered_otp:
             if not is_otp_expired(creation_time_str):
@@ -109,18 +97,14 @@ def verify_otp():
     else:
         email = session.get('email')
         # session['email'] = email
-        print("email on get: ", email)
         otp_data = get_otp(email)
-        print("otp_data:", otp_data)
         if otp_data is not None:
             stored_otp, creation_time_str = otp_data
-            print("creation_time_str:", creation_time_str)
             if creation_time_str is not None:
                 creation_time_str = creation_time_str.split('.')[0]
                 # Convert creation_time_str to datetime object
                 creation_time = datetime.strptime(
                     creation_time_str, "%Y-%m-%d %H:%M:%S")
-                print("creation: ", creation_time)
                 expiration_time = creation_time + timedelta(minutes=5)
                 current_time = datetime.now()
                 remaining_time = expiration_time - current_time
@@ -131,12 +115,10 @@ def verify_otp():
                 # Format remaining_time as string (mm:ss)
                 minutes, seconds = divmod(remaining_time_seconds, 60)
                 remaining_time_str = f"{int(minutes):02d}:{int(seconds):02d}"
-                print("remaining: ", remaining_time_str)
 
                 # Convert remaining_time to seconds
                 remaining_time_seconds = int(
                     max(remaining_time.total_seconds(), 0))
-                print("remaining seconds: ", remaining_time_seconds)
 
                 return render_template('verify_otp.html', remaining_time_seconds=remaining_time_seconds)
             else:
@@ -202,7 +184,7 @@ def login_user():
             # Verify the password
             # Assuming password is stored in the 6th column
             hashed_password_from_db = user[5]
-            if bcrypt.checkpw(password.encode('utf-8'), hashed_password_from_db):
+            if bcrypt.checkpw(password.encode('utf-8'), hashed_password_from_db.encode('utf-8')):
                 # Store user information in session
                 session['email'] = email
                 session['user_type'] = 'user'
@@ -247,7 +229,15 @@ def user_logout():
 def deposit():
     if session.get('user_type') == 'user':
         email = session['email']
-        deposit_amount = float(request.form['amount'])
+        try:
+            deposit_amount = float(request.form.get('amount', 0))
+        except (ValueError, TypeError):
+            flash("Please enter a valid deposit amount.", "error")
+            return redirect(url_for('user.user_dashboard'))
+
+        if deposit_amount <= 0:
+            flash("Deposit amount must be greater than zero.", "error")
+            return redirect(url_for('user.user_dashboard'))
 
         # Update user balance
         bank = BankAccount()
@@ -275,14 +265,27 @@ def deposit():
 def withdraw():
     if session.get('user_type') == 'user':
         email = session['email']
-        withdraw_amount = float(request.form['amount'])
 
-        # Check if the withdrawal amount is greater than the user's balance
+        try:
+            withdraw_amount = float(request.form.get('amount', 0))
+        except (ValueError, TypeError):
+            flash("Please enter a valid withdrawal amount.", "error")
+            return redirect(url_for('user.user_dashboard'))
+
+        if withdraw_amount <= 0:
+            flash("Withdrawal amount must be greater than zero.", "error")
+            return redirect(url_for('user.user_dashboard'))
+
         user_info = get_user_info(email)
+
         if user_info:
             user_balance = user_info[3]
+
             if withdraw_amount > user_balance:
-                flash("You don't have sufficient balance for this withdrawal.", "error")
+                flash(
+                    "You don't have sufficient balance for this withdrawal.",
+                    "error"
+                )
                 return redirect(url_for('user.user_dashboard'))
 
         bank = BankAccount()
@@ -311,8 +314,15 @@ def transfer():
     if session.get('user_type') == 'user':
         sender_email = session['email']
         recipient_phone = request.form['recipient_phone']
-        transfer_amount = float(request.form['transfer_amount'])
+        try:
+            transfer_amount = float(request.form.get('transfer_amount', 0))
+        except (ValueError, TypeError):
+            flash("Please enter a valid transfer amount.", "error")
+            return redirect(url_for('user.user_dashboard'))
 
+        if transfer_amount <= 0:
+            flash("Transfer amount must be greater than zero.", "error")
+            return redirect(url_for('user.user_dashboard'))
         # Check if the recipient's phone number exists in the database
         conn = sqlite3.connect('bank.db')
         cursor = conn.cursor()
@@ -406,21 +416,44 @@ def user_transactions():
 
 @user_bp.route('/settings', methods=['GET', 'POST'])
 def settings():
-    if session.get('user_type') == 'user':
-        conn = sqlite3.connect('bank.db')
-        cursor = conn.cursor()
-        user_email = session.get('email')
-        user_info = get_user_info(user_email)
-        user_initials = user_info[1].upper(
-        ) + " " + user_info[2][0].upper()
-        if user_info:
-            print(user_info)
-            cursor.execute(
-                "SELECT * FROM accounts WHERE email = ?", (user_email,))
-            user_data = cursor.fetchall()
-            print("user data: ", user_data)
-            print(type(user_data))
-    return render_template('settings.html', user_data=user_data, user_initials=user_initials)
+    if session.get('user_type') != 'user':
+        return redirect(url_for('index'))
+
+    user_email = session.get('email')
+
+    if not user_email:
+        return redirect(url_for('index'))
+
+    user_info = get_user_info(user_email)
+
+    if not user_info:
+        session.clear()
+        return redirect(url_for('index'))
+
+    user_initials = (
+        user_info[1].upper()
+        + " "
+        + user_info[2][0].upper()
+    )
+
+    conn = sqlite3.connect('bank.db')
+    cursor = conn.cursor()
+
+    cursor.execute(
+        "SELECT * FROM accounts WHERE email = ?",
+        (user_email,)
+    )
+
+    user_data = cursor.fetchall()
+
+    cursor.close()
+    conn.close()
+
+    return render_template(
+        'settings.html',
+        user_data=user_data,
+        user_initials=user_initials
+    )
 
 
 @user_bp.route('/change_password', methods=['POST'])
@@ -431,9 +464,7 @@ def change_password():
 
     email = session['email']
     old_password = request.form['old_password']
-    print(old_password)
     new_password = request.form['new_password']
-    print(new_password)
 
     conn = sqlite3.connect('bank.db')
     cursor = conn.cursor()
@@ -446,11 +477,11 @@ def change_password():
             return jsonify({'error': 'You cannot have the same password. Please try again.'}), 400
         else:
             hashed_password_from_db = user[5]
-            if bcrypt.checkpw(old_password.encode('utf-8'), hashed_password_from_db):
+            if bcrypt.checkpw(old_password.encode("utf-8"),hashed_password_from_db.encode("utf-8")):
                 # Old password verification successful
                 # Hash the new password
                 hashed_new_password = bcrypt.hashpw(
-                    new_password.encode('utf-8'), bcrypt.gensalt())
+                    new_password.encode('utf-8'), bcrypt.gensalt()).decode("utf-8")
 
                 # Update the password in the database
                 cursor.execute(
@@ -501,7 +532,6 @@ def export_csv_user():
         """, (user_info[0], user_info[0]))
     transfer_history = cursor.fetchall()
 
-    print("Transfer history:", transfer_history)
 
     # Generate CSV content
     csv_content = "Transaction Type,Amount,Datetime\n"
@@ -511,8 +541,11 @@ def export_csv_user():
     for amount, datetime in withdraw_history:
         csv_content += f"Withdrawal,{amount},{datetime}\n"
     csv_content += transfer
-    for sender_name, recipient_name, amount, datetime in transfer_history:
-        csv_content += f"Transfer,{amount},{datetime},{sender_name},{recipient_name}\n"
+    for amount, datetime_value, sender_name, recipient_name in transfer_history:
+        csv_content += (
+        f"Transfer,{sender_name},{recipient_name},"
+        f"{amount},{datetime_value}\n"
+    )
 
     # Set the desired filename
     filename = f"user_transactions_{user_info[1]}_{user_info[2]}.csv"
@@ -527,113 +560,6 @@ def export_csv_user():
     return response
 
 
-# Route to handle sending friend requests
-@user_bp.route('/send_friend_request', methods=['POST'])
-def send_friend_request():
-    if session.get('user_type') == 'user':
-        from_user_id = session['user_id']
-        to_phone = request.form['friend_phone']
-
-        # Check if the recipient's phone number exists in the database
-        conn = sqlite3.connect('bank.db')
-        cursor = conn.cursor()
-        cursor.execute("SELECT * FROM accounts WHERE phone = ?",
-                       (to_phone,))
-        recipient = cursor.fetchone()
-        if recipient:
-            to_user_id = recipient['id']
-
-            # Check if a friend request already exists
-            existing_request = get_friend_request(from_user_id, to_user_id)
-            if existing_request:
-                flash("Friend request already sent.", "info")
-            else:
-                # Send the friend request
-                create_friend_request(from_user_id, to_user_id)
-                flash("Friend request sent successfully.", "success")
-        else:
-            flash("User with the provided phone number does not exist.", "error")
-
-        return redirect(url_for('profile'))
-    else:
-        return redirect(url_for('index'))
-
-# Route to handle accepting friend requests
-
-
-@user_bp.route('/accept_friend_request/<int:request_id>')
-def accept_friend_request(request_id):
-    if session.get('user_type') == 'user':
-        to_user_id = session['user_id']
-
-        # Check if the friend request exists and is pending
-        friend_request = get_friend_request_by_id(request_id)
-        if friend_request and friend_request['status'] == 'pending' and friend_request['to_user_id'] == to_user_id:
-            from_user_id = friend_request['from_user_id']
-
-            # Accept the friend request
-            accept_friend_request(request_id)
-            create_friend_relationship(from_user_id, to_user_id)
-            flash("Friend request accepted.", "success")
-        else:
-            flash("Invalid friend request.", "error")
-
-        return redirect(url_for('profile'))
-    else:
-        return redirect(url_for('index'))
-
-
-@user_bp.route('/notification_status')
-def notification_status(user_email):
-    # Logic to determine notification status (e.g., from the database)
-    has_unread_messages = True  # Placeholder value, replace with your actual logic
-    unread_messages = has_unread_messages(user_email)
-
-    return jsonify(has_unread_messages=unread_messages)
-
-
-# Create a route to add a notification
-@user_bp.route('/add_notification', methods=['POST'])
-def add_notification():
-    user_email = session.get('user_email')
-    if not user_email:
-        return jsonify({'error': 'User not logged in'}), 401
-
-    message = request.form.get('message')
-    if not message:
-        return jsonify({'error': 'No message provided'}), 400
-
-    conn = sqlite3.connect('bank.db')
-    cursor = conn.cursor()
-    cursor.execute('''INSERT INTO messages (sender, recipient, content, timestamp)
-                      VALUES (?, ?, ?, ?)''', ('System', user_email, message, datetime.now()))
-    conn.commit()
-    cursor.close()
-    conn.close()
-
-    return jsonify({'success': 'Notification added'}), 200
-
-
-@user_bp.route('/api/notifications', methods=['GET'])
-def get_notifications():
-    user_email = session.get('user_email')
-    if not user_email:
-        return jsonify({'error': 'User not logged in'}), 401
-
-    conn = sqlite3.connect('bank.db')
-    cursor = conn.cursor()
-    cursor.execute(
-        "SELECT id, content, timestamp FROM messages WHERE recipient = ?", (user_email,))
-    messages = cursor.fetchall()
-    cursor.close()
-    conn.close()
-
-    notifications = [{'id': row[0], 'content': row[1],
-                      'timestamp': row[2]} for row in messages]
-    return jsonify(notifications)
-
-
-'''////// END OF PART FOR SEND FRIEND REQUESTS //////'''
 
 
 @user_bp.route('/user_dashboard')
@@ -655,9 +581,6 @@ def user_dashboard():
     # Close the cursor and connection
     cursor.close()
     conn.close()
-
-    create_friend_table()
-    create_friend_request_table()
 
     messages = fetch_messages(email)
 
@@ -682,13 +605,11 @@ def user_dashboard():
             cursor.execute(
                 "SELECT amount, datetime FROM deposit_history WHERE email = ?", (email,))
             deposit_history = cursor.fetchall()
-            print("Deposit history:", deposit_history)
 
             # Fetch withdraw history
             cursor.execute(
                 "SELECT amount, datetime FROM withdrawal_history WHERE email = ?", (email,))
             withdrawal_history = cursor.fetchall()
-            print("Withdraw history:", withdrawal_history)
 
             # Fetch transfer history including sender's name
             cursor.execute("""
@@ -701,20 +622,16 @@ def user_dashboard():
             """, (user_info[0], user_info[0]))
             transfer_history = cursor.fetchall()
 
-            print("Transfer history:", transfer_history)
-
             # ----------------------------- Last Transactions -----------------------------
             # Fetch the last deposit
             cursor.execute(
                 "SELECT 'Deposit', amount, datetime FROM deposit_history WHERE email = ? ORDER BY datetime DESC LIMIT 1", (email,))
             last_deposit = cursor.fetchone()
-            print("Last deposit:", last_deposit)
 
             # Fetch the last withdrawal
             cursor.execute(
                 "SELECT 'Withdrawal', amount, datetime FROM withdrawal_history WHERE email = ? ORDER BY datetime DESC LIMIT 1", (email,))
             last_withdrawal = cursor.fetchone()
-            print("Last withdrawal:", last_withdrawal)
 
             # Fetch the last transfer
             cursor.execute("""
@@ -729,7 +646,6 @@ def user_dashboard():
                 LIMIT 1
             """, (user_info[0], user_info[0]))
             last_transfer = cursor.fetchone()
-            print("Last transfer:", last_transfer)
 
             if last_deposit and (not last_withdrawal or last_deposit[2] > last_withdrawal[2]) and (not last_transfer or last_deposit[2] > last_transfer[6]):
                 last_transaction = last_deposit
@@ -740,7 +656,6 @@ def user_dashboard():
             else:
                 last_transaction = None
 
-            print("Last Transaction:", last_transaction)
             # Close the cursor and connection
             cursor.close()
             conn.close()
@@ -793,7 +708,6 @@ def user_dashboard():
                           'sent_amounts': sent_amounts,
                           'receiv_date': receiv_date,
                           'receiv_amounts': receiv_amounts}
-            print("chart_data: ", chart_data)
 
             rendered_template = render_template('user_dashboard.html',
                                                 user_info=user_info,

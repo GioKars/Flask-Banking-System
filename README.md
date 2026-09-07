@@ -1,6 +1,6 @@
 # Flask Banking System
 
-A Flask-based web application designed to help customers manage their banking transactions and personal data. The system also allows an admin to monitor customer information and manage access to the platform, enabling customers to deposit or withdraw funds securely.
+A Flask-based portfolio banking application demonstrating authentication, OTP email verification, database-driven transactions, user/admin workflows and phone-number transfers.
 
 ## Table of Contents
 
@@ -15,7 +15,7 @@ A Flask-based web application designed to help customers manage their banking tr
 
 ## Overview
 
-The Flask Banking System provides a secure platform for customers to manage their bank accounts, view transaction history, and perform financial operations such as deposits and withdrawals. Administrators have access to view customer information and control customer access to the platform, ensuring a safe and regulated banking environment.
+The Flask Banking System provides a simulated banking environment where user can manage their accounts, view transaction history, and perform financial operations such as deposits and withdrawals. Administrators have access to view customer information and control customer access to the platform, ensuring a safe and regulated banking environment.
 
 ## Features
 
@@ -62,16 +62,26 @@ The Flask Banking System provides a secure platform for customers to manage thei
      ```plaintext
      FLASK_APP=app.py
      FLASK_ENV=development
-     SECRET_KEY=your_secret_key
+     SECRET_KEY=YOUR_SECRET_KEY
+     SMTP_HOST=yoursmtp_host
+     SMTP_PORT=yoursmtp_port
+     EMAIL_USER=yourEmail
+     EMAIL_PASSWORD=yourPassword
      ```
 
-5. **Run the application**:
+5. **Run the init_db.py**:
+
+   ```bash
+   python init_db.py #To initialize admin credentials for admin login page
+   ```
+
+6. **Run the application**:
 
    ```bash
    flask run
    ```
 
-6. **Access the application**:
+7. **Access the application**:
    - Navigate to `http://127.0.0.1:5000/` in your web browser.
 
 ## Usage
@@ -111,6 +121,12 @@ Here are some screenshots of the application:
 
 Contributions are welcome! Please fork this repository and submit a pull request with your changes.
 
+## Disclaimer
+
+This project is a portfolio/demo application created for educational
+purposes and is not intended for real financial use.
+
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+

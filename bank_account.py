@@ -20,8 +20,16 @@ class BankAccount:
                                 password TEXT,
                                 sex TEXT,
                                 balance FLOAT,
-                                approved INTEGER
-                              )''')
+                                approved INTEGER,
+                                frozen INTEGER DEFAULT 0
+                              );''')
+        self.cursor.execute('''CREATE TABLE IF NOT EXISTS messages (
+                                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                                sender TEXT,
+                                recipient TEXT,
+                                content TEXT,
+                                timestamp TEXT
+                            );''')
         self.cursor.execute('''CREATE TABLE IF NOT EXISTS deposit_history (
                                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                                 email TEXT,
@@ -47,11 +55,13 @@ class BankAccount:
                             );''')
         self.conn.commit()
 
-    def create_user(self, name, surname, email, phone, password, sex, balance=0, approved=False):
-        hashed_password = bcrypt.hashpw(
-            password.encode('utf-8'), bcrypt.gensalt())
-        self.cursor.execute('''INSERT INTO accounts (name, surname, email, phone, password, sex, balance, approved) 
-                                VALUES (?, ?, ?, ?, ?, ?, ?, ?)''', (name, surname, email, phone, hashed_password, sex.upper(), balance, approved))
+    def create_user(self, name, surname, email, phone, password, sex, balance=0, approved=False, frozen=0):
+        # Δημιουργία hash και μετατροπή σε string για αποφυγή του [blob 60]
+        hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+        
+        self.cursor.execute('''INSERT INTO accounts (name, surname, email, phone, password, sex, balance, approved, frozen) 
+                                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)''', 
+                            (name, surname, email, phone, hashed_password, sex.upper(), balance, approved, frozen))
         self.conn.commit()
 
     def get_all_accounts(self):
@@ -79,5 +89,8 @@ class BankAccount:
             return False
 
     def __del__(self):
-        self.cursor.close()
-        self.conn.close()
+        try:
+            self.cursor.close()
+            self.conn.close()
+        except Exception:
+            pass
